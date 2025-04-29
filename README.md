@@ -9,6 +9,6 @@ This may change depending on how lazy I am when it comes time to writing it, I m
 
 The only things I'll be able to utilise here are as follows:
 - **QEMU** to virtualise an x86-64 machine, and
-- **GNU xorriso** to produce ISO files to be loaded into the virtual machine.
+- **mkisofs** to produce ISO files to be loaded into the virtual machine.
 
 Everything else *MUST* be implemented **from scratch**.
