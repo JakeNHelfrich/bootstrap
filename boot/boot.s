@@ -9,9 +9,10 @@ _start:
 
 loop:
     jal   ra, get_char
-    jal   ra, print_char
-    
+
     beq   a1, t2, end
+
+    jal   ra, print_char
 
     j     loop
 
