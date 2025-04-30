@@ -1,9 +1,11 @@
 mkdir .temp
 cd .temp
 
-mkisofs -o disk.iso -G ../boot/mbr.bin ../boot
+riscv64-elf-as -o boot.o ../boot/boot.s
+riscv64-elf-ld -Ttext=0x80000000 -o boot.elf boot.o
+riscv64-elf-objcopy -O binary boot.elf boot.bin
 
-qemu-system-x86_64 -machine type=isapc disk.iso
+qemu-system-riscv64 -serial stdio -machine virt -bios none -kernel boot.bin
 
 cd ..
 rm -drf .temp
