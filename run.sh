@@ -6,7 +6,7 @@ riscv64-elf-ld -Ttext=0x80000000 -o boot.elf boot.o
 riscv64-elf-objcopy -O binary boot.elf boot.bin
 
 qemu-system-riscv64 \
-    -serial stdio \
+    -nographic \
     -machine virt \
     -bios boot.bin \
 
