@@ -12,3 +12,13 @@ The only things I'll be able to utilise here are as follows:
 - **RISCV GCC tool chain** to produce binary files from RISCV assembly
 
 Everything else *MUST* be implemented **from scratch**.
+
+## Emulated System
+
+For this project I will be emulating the SiFive FU540-C000 SoC.
+The reason? This was the first board that I could find [documentation](https://www.sifive.com/document-file/freedom-u540-c000-manual) for.
+
+This SoC is emulated by setting the following QEMU flags:
+
+- machine   = sifive_u
+- cpu       = sifive-u54 

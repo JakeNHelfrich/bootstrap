@@ -1,31 +1,46 @@
 .section .text
 .globl _start
 _start:
-    lui   t0, 0x10000         # a0 = 0x10000000 (UART base address)
-    lui   t1, 0x10000         # a0 = 0x10000005 (UART line status register)
-    addi  t1, t1, 0x005       #
+    csrr    t0, mhartid
+    bnez    t0, end
 
-    addi  t2, x0, 0x00D       # carriage return
+    addi    x1, x0, 0x00D       # ASCII carriage return
+
+init_uart:
+    lui     x2, 0x10010         # UART Device base address in MMIO
+    addi    x2, x2, 0x000       # TX Data offset
+    
+    addi    t1, x2, 0x08        # TCR Register offset
+
+    lui     t2, 0x0             # Set TCR Register txen bit to 1 to enable the device for writing
+    addi    t2, t2, 0x1
+    sw      t2, 0(t1)
+
+    addi    t3, x2, 0x0C        # RCR Register offset
+    sw      t2, 0(t3)           # Set RCR Register rxen bit to 1 to enable the device for reading
+
+    addi    x3, x2, 0x04        # RX Data offset
 
 loop:
-    jal   ra, get_char
+    jal     ra, get_char
+    jal     ra, print_char
+    j loop
 
-    beq   a1, t2, end
-
-    jal   ra, print_char
-
-    j     loop
 
 get_char:
-    lb    a1, 0(t1)
-    andi  a2, a1, 1
-    beqz  a2, get_char
-    
-    lb    a1, 0(t0)
-    jalr  x0, 0(ra)
+    lw      t1, 0(x3)
+    srli    t2, t1, 31
+    bnez    t2, get_char
+
+    or      a0, x0, t1
+    jalr    x0, 0(ra)
 
 print_char:
-    sb    a1, 0(t0)
-    jalr  x0, 0(ra) 
+    lw      t1, 0(x2)
+    srli    t2, t2, 31
+    bnez    t2, print_char
+
+    sw      a0, 0(x2)
+    jalr    x0, 0(ra)
 
 end:
