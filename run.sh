@@ -9,7 +9,7 @@ qemu-system-riscv64 \
     -nographic \
     -machine sifive_u \
     -cpu sifive-u54 \
-    -bios boot.bin \
+    -bios boot.bin
 
 cd ..
 rm -drf .temp

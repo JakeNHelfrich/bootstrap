@@ -4,7 +4,7 @@ _start:
     csrr    t0, mhartid
     bnez    t0, end
 
-    addi    x1, x0, 0x00D       # ASCII carriage return
+    addi    x15, x0, 0x0D       # ASCII carriage return
 
 init_uart:
     lui     x2, 0x10010         # UART Device base address in MMIO
@@ -23,22 +23,25 @@ init_uart:
 
 loop:
     jal     ra, get_char
+
+    beq     a0, x15, end
+
     jal     ra, print_char
     j loop
 
 
 get_char:
-    lw      t1, 0(x3)
+    lw      t1, 0(x3)           # Load RCR and check the empty bit.  
     srli    t2, t1, 31
-    bnez    t2, get_char
+    bnez    t2, get_char        # Keep loading until empty bit is unset which signifies a character has been placed. 
 
     or      a0, x0, t1
     jalr    x0, 0(ra)
 
 print_char:
-    lw      t1, 0(x2)
+    lw      t1, 0(x2)           # Load TCR and check the full bit.
     srli    t2, t2, 31
-    bnez    t2, print_char
+    bnez    t2, print_char      # Keep loading until full bit is unset which signifies the transmit register is ready to write.
 
     sw      a0, 0(x2)
     jalr    x0, 0(ra)
