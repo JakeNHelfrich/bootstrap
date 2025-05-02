@@ -2,7 +2,7 @@ mkdir .temp
 cd .temp
 
 riscv64-elf-as -o boot.o ../boot/boot.s
-riscv64-elf-ld -Ttext=0x10000 -o boot.elf boot.o
+riscv64-elf-ld -T ../boot/boot.ld -o boot.elf boot.o
 riscv64-elf-objcopy -O binary boot.elf boot.bin
 
 qemu-system-riscv64 \
