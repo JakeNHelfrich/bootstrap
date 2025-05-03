@@ -1,0 +1,4 @@
+boot.*
+!boot.s
+uart.*
+!uart.s
