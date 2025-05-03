@@ -1,15 +1,13 @@
-mkdir .temp
-cd .temp
+cd boot
 
-riscv64-elf-as -o boot.o ../boot/boot.s
-riscv64-elf-ld -T ../boot/boot.ld -o boot.elf boot.o
-riscv64-elf-objcopy -O binary boot.elf boot.bin
+make
 
 qemu-system-riscv64 \
     -nographic \
     -machine sifive_u \
     -cpu sifive-u54 \
-    -bios boot.bin
+    -bios boot
+
+make clean
 
 cd ..
-rm -drf .temp
