@@ -1,10 +1,11 @@
+.section .data 
+    carriage_return: .byte 0x0D    
+
 .section .text
 .globl _start
 _start:
     csrr    t0, mhartid
     bnez    t0, end
-
-    addi    x15, x0, 0x0D       # ASCII carriage return
 
 init_uart:
     lui     x2, 0x10010         # UART Device base address in MMIO
@@ -24,7 +25,9 @@ init_uart:
 loop:
     jal     ra, get_char
 
-    beq     a0, x15, end
+    la      t1, carriage_return
+    lb      t1, 0(t1)
+    beq     a0, t1, end
 
     jal     ra, print_char
     j loop
