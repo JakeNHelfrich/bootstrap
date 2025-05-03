@@ -1,52 +1,89 @@
-.section .data 
-    carriage_return: .byte 0x0D    
-
 .section .text
+.equ CARRIAGE_RETURN,        0x0D
+
+.equ UART_BASE,             0x10010000
+
+.equ UART_TCR_OFFSET,       0x08
+.equ UART_TCR_ADDR,         UART_BASE + UART_TCR_OFFSET
+
+.equ UART_TX_OFFSET,        0x00
+.equ UART_TX_ADDR,          UART_BASE + UART_TX_OFFSET
+
+.equ UART_RCR_OFFSET,       0x0C
+.equ UART_RCR_ADDR,         UART_BASE + UART_RCR_OFFSET
+
+.equ UART_RX_OFFSET,        0x04
+.equ UART_RX_ADDR,          UART_BASE + UART_RX_OFFSET
+
 .globl _start
 _start:
     csrr    t0, mhartid
     bnez    t0, end
 
-init_uart:
-    lui     x2, 0x10010         # UART Device base address in MMIO
-    addi    x2, x2, 0x000       # TX Data offset
+    jal     ra, uart_init_device
+    jal     x15, loop
+    jal     ra, end
     
-    addi    t1, x2, 0x08        # TCR Register offset
+.globl uart_init_device
+.type uart_init_device, @function
+uart_init_device:
+1:
+    # Load TCR register and set txen bit to 1
+    la      t0, UART_TCR_ADDR
+    li      t1, 0x1
+    sw      t1, 0(t0)
 
-    lui     t2, 0x0             # Set TCR Register txen bit to 1 to enable the device for writing
-    addi    t2, t2, 0x1
-    sw      t2, 0(t1)
+    # Load RCR register and set txen bit to 1
+    la      t0, UART_RCR_ADDR
+    sw      t1, 0(t0)
 
-    addi    t3, x2, 0x0C        # RCR Register offset
-    sw      t2, 0(t3)           # Set RCR Register rxen bit to 1 to enable the device for reading
-
-    addi    x3, x2, 0x04        # RX Data offset
+    ret
 
 loop:
-    jal     ra, get_char
+1:
+    jal     ra, uart_get_char
 
-    la      t1, carriage_return
-    lb      t1, 0(t1)
-    beq     a0, t1, end
+    la      t0, CARRIAGE_RETURN
+    beq     a0, t0, 2f
 
-    jal     ra, print_char
-    j loop
+    jal     ra, uart_print_char
+    j       1b
+2:
+    jalr    x0, 0(x15)
 
 
-get_char:
-    lw      t1, 0(x3)           # Load RCR and check the empty bit.  
+.globl uart_get_char
+.type uart_get_char, @function
+uart_get_char:
+1:
+    # Load RX register  
+    la      t0, UART_RX_ADDR
+    lw      t1, 0(t0)  
+    # Load empty bit (bit 31)
     srli    t2, t1, 31
-    bnez    t2, get_char        # Keep loading until empty bit is unset which signifies a character has been placed. 
 
+    # If empty bit is 0 it means a byte has been placed in register. Else loop.
+    bnez    t2, 1b              
+
+    # Load byte from RX register
     or      a0, x0, t1
-    jalr    x0, 0(ra)
+    ret
 
-print_char:
-    lw      t1, 0(x2)           # Load TCR and check the full bit.
-    srli    t2, t2, 31
-    bnez    t2, print_char      # Keep loading until full bit is unset which signifies the transmit register is ready to write.
+.globl uart_print_char
+.type uart_print_char, @function
+uart_print_char:
+1:
+    # Load TX register
+    la      t0, UART_TX_ADDR
+    lw      t1, 0(t0) 
+    # Load full bit (bit 31)
+    srli    t2, t1, 31
+    
+    # If full bit is 0 it means the register is empty and ready for writing. Else loop.
+    bnez    t2, 1b      
 
-    sw      a0, 0(x2)
-    jalr    x0, 0(ra)
+    # Load character into TX register 
+    sw      a0, 0(t0)
+    ret
 
 end:
