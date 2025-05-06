@@ -23,11 +23,3 @@ This SoC is emulated by setting the following QEMU flags:
 - machine   = sifive_u
 - cpu       = sifive-u54 
 
-## Goals
-
-Get `/boot` to:
-    1. Set up trap handler (SYSCALL Only)
-    2. Set Privlege level to **U**
-    3. Jump to pplication (TODO: Find where to put it. Memory? Block Storage? Dynamic lookup?)
-
-Write an assembler application which will assemble code (typed in or from disk) and then execute.  
